@@ -60,29 +60,25 @@ tasks_dependencies = {
 
 # Словарь tasks_dependencies = {} вшит в задачу, вставлять его в решение не нужно.
 async def execute_subtask(task_name: str, duration: int):
-    await asyncio.sleep(duration)
-    if duration
-    print("Подзадача: {}")
+    await asyncio.sleep(duration if duration <= 5 else 5)
+    print(f"Подзадача: {task_name}{" не " if duration > 5 else " "}успела выполниться в срок, за {duration} сек.")
+    return duration <= 5
 
 
 async def execute_task(task_name: str, subtasks: dict):
     subtasks_list = subtasks["этапы"]
-    subtasks = [execute_subtask(st["название"], st["время"] if st["время"] < 5 else 5) for st in subtasks_list]
+    subtasks = [execute_subtask(st["название"], st["время"]) for st in subtasks_list]
     sub_results = await asyncio.gather(*subtasks)
-    for sub_result in sub_results:
-        print(sub_result)
+    if all(sub_results):
+        print(f"Задача: {task_name} = все подзадачи выполнены.")
+    else:
+        print(
+            f"Задача: {task_name} не выполнилась в срок, т.к. одна или несколько подзадач заняли слишком много времени.")
 
-    st_max = max(subtasks_list, key=lambda s: s["время"])["время"]
-    return st_max <= 5
 
 async def main():
     tasks = [execute_task(n, st) for n, st in tasks_dependencies.items()]
-    results = await asyncio.gather(*tasks)
-    for result in results:
-        if result:
-            print("Задача: Компиляция_модулей = все подзадачи выполнены.")
-        else:
-            print("Задача: Подготовка_окружения не выполнилась в срок, т.к. одна или несколько подзадач заняли слишком много времени.")
+    await asyncio.gather(*tasks)
 
 
 asyncio.run(main())
