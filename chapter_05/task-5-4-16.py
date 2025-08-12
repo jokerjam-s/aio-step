@@ -32,6 +32,10 @@ async def main():
             break
         await asyncio.sleep(0.5)
 
+    for t in tasks:
+        if t.done():
+            print(t.result())
+
     # done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
     # for task in pending:
     #     task.cancel()
