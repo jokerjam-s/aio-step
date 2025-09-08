@@ -18,15 +18,21 @@ patient_info = [
 import asyncio
 
 
-async def producer(queues: dict[asyncio.Queue], patient_info: dict):
-    await queues[patient_info["direction"]].put(patient_info)
-    print(
-        f"Регистратор добавил в очередь: {patient_info['name']}, направление: {patient_info['direction']}, процедура: {patient_info['procedure']}"
-    )
+async def producer(queues: dict[asyncio.Queue], patient_info: list[dict]):
+    for patient in patient_info:
+        await queues[patient["direction"]].put(patient)
+        print(
+            f"Регистратор добавил в очередь: {patient['name']}, направление: {patient['direction']}, процедура: {patient['procedure']}"
+        )
+        await asyncio.sleep(0.1)
 
 
-async def consumer(queue, doctor_type):
-    pass
+async def consumer(queue: asyncio.Queue, doctor_type:str):
+    while True:
+        patient = await queue.get()
+        print(f"{doctor_type} принял пациента: {patient['name']}, процедура: {patient['procedure']}")
+        await asyncio.sleep(0.5)
+        queue.task_done()
 
 
 async def main():
@@ -38,7 +44,13 @@ async def main():
         'ЛОР': asyncio.Queue(),
     }
 
-    pass
+    tasks = [asyncio.create_task(producer(queues, patient_info))]
+    for k in queues.keys():
+        tasks.append(asyncio.create_task(consumer(queues[k], k)))
+    await asyncio.sleep(0)
+    for k in queues.keys():
+        await queues[k].join()
+
 
 
 asyncio.run(main())
