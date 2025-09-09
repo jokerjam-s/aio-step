@@ -24,12 +24,25 @@ flights = [
 
 
 
-async def process_flights(queue):
-    pass
+async def process_flights(queue: asyncio.PriorityQueue):
+    while True:
+        priority, flight = await queue.get()
+        print(f"Посадка самолёта: {flight} с приоритетом {priority}")
+        queue.task_done()
+        await asyncio.sleep(1)
+
+
 
 
 async def main():
-    pass
+    queue = asyncio.PriorityQueue()
+
+    for k, v in flights:
+        await queue.put((v, k))
+    task = asyncio.create_task(process_flights(queue))
+    await asyncio.sleep(0)
+
+    await queue.join()
 
 
 asyncio.run(main())
