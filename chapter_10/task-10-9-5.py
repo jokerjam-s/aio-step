@@ -6,7 +6,6 @@ import json
 
 import aiocsv
 import aiofiles
-from aiofiles.base import AiofilesContextManager
 
 csv_file = './file/address_10000.csv'
 json_file = './file/address_10000.json'
